@@ -62,8 +62,7 @@ P00001606T0076|37 50|5-nucleotidase"""
 P00008171T0000 Pharmacologic aspects of neonatal hyperbilirubinemia."""
         input_raw_handle = StringIO(input_raw)
 
-        input_annotation = """P00001606T0076|14 33|alkaline phosphatases
-P00001606T0076|37 50|5-nucleotidase"""
+        input_annotation = """P00001606T0076|14 33|alkaline phosphatases"""
         input_annotation_handle = StringIO(input_annotation)
         sut = BiocreativeDataset(input_raw_handle, input_annotation_handle)
 
