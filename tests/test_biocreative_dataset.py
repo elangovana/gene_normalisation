@@ -26,6 +26,9 @@ P00001606T0076|37 50|5-nucleotidase"""
         # Act
         actual = sut[0]
 
+        # Assert
+        self.assertSequenceEqual(expected, actual)
+
     def test___getitem___no_entity(self):
         """
         Test case if item is returned with no entity
