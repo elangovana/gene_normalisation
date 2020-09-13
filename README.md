@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/elangovana/gene_normalisation.svg?branch=master)](https://travis-ci.org/elangovana/gene_normalisation)
+
 # Gene  Normalisation
 Identify gene mentions using training data from BioCreative II tasks
 
