@@ -54,7 +54,7 @@ P00001606T0076|37 50|5-nucleotidase"""
 
     def test___len__(self):
         """
-        Test case if item is returned with no entity
+        Test case : Total number of samples in the dataset
         :return:
         """
         # Arrange
