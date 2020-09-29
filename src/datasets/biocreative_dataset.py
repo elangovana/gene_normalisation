@@ -12,7 +12,9 @@ class BiocreativeDataset(Dataset):
         self._text_lines = self._parse(self._readlines(train_file_or_handle))
 
         # Load annotations
-        self._annotation = self._parse_annotation(self._readlines(annotation_file_or_handle))
+        self._annotation = {}
+        if annotation_file_or_handle is not None:
+            self._annotation = self._parse_annotation(self._readlines(annotation_file_or_handle))
 
     def _readlines(self, file_or_handle):
         if isinstance(file_or_handle, str):
@@ -31,6 +33,9 @@ class BiocreativeDataset(Dataset):
         annotations = self._annotation.get(id, None)
 
         token_text, token_labels = self._tokenise(text, annotations)
+
+        if self.transformer is not None:
+            token_text, token_labels = self.transformer(token_text, token_labels)
 
         return token_text, token_labels
 
@@ -96,7 +101,7 @@ class BiocreativeDataset(Dataset):
             tokens.append(entity_token)
             tokens_labels.append("s")
 
-            i=end_pos
+            i = end_pos
 
         other_token = line[i:]
         if len(other_token) > 0:
