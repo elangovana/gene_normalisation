@@ -1,7 +1,10 @@
+from typing import List, Dict
+
+
 class BiocreativeNerLabelMapper:
 
     def __init__(self):
-        self._classes=['o', 's','c']
+        self._classes=['o', 's','sc']
         self._classes_dict = { c:i for i, c in enumerate(self._classes)}
         self._indices_dict = { i:c for i, c in enumerate(self._classes)}
 
@@ -14,6 +17,14 @@ class BiocreativeNerLabelMapper:
 
     def index_to_label(self, index:int)->str:
         return self._indices_dict[index]
+
+    @property
+    def entity_labels(self)->List[str]:
+        return ["s"]
+
+    @property
+    def continuation_symbol(self) -> Dict[str, str]:
+        return {"s" : "sc"}
 
     @property
     def positive_label(self):
