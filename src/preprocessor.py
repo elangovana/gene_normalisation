@@ -5,7 +5,8 @@ import torch
 
 class Preprocessor:
 
-    def __init__(self, max_feature_len, tokeniser, entity_symbols, continution_symbols):
+    def __init__(self, max_feature_len, tokeniser, entity_symbols, continution_symbols, other_symbol):
+        self._other_symbol = other_symbol
         self._continution_symbols = continution_symbols
         self._entity_symbols = entity_symbols
         self.max_feature_len = max_feature_len
@@ -68,9 +69,11 @@ class Preprocessor:
         """
         tokens = self._x[:self.max_feature_len - 2]
         pad_tokens = [self.pad_token()] * (self.max_feature_len - 2 - len(tokens))
-        result = ['[CLS]'] + tokens + pad_tokens + ['[SEP]']
+        x = ['[CLS]'] + tokens + pad_tokens + ['[SEP]']
+        y = [self._other_symbol] + self._y[:self.max_feature_len - 2] + [self._other_symbol] * len(pad_tokens) + [self._other_symbol]
 
-        self._x = result
+        self._x = x
+        self._y = y
         return self
 
     def _to_tensor(self):
