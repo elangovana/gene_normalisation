@@ -48,9 +48,12 @@ class Preprocessor:
         y = []
         for xi, yi in zip(self._x, self._y):
             x_tokens = self.tokeniser.tokenize(xi)
-            y_tokens = [yi] + [self._continution_symbols.get(yi, yi)] * (len(x_tokens) - 1)
+            y_tokens = []
+            if len(x_tokens) > 0:
+                y_tokens = [yi] + [self._continution_symbols.get(yi, yi)] * (len(x_tokens) - 1)
             x.extend(x_tokens)
             y.extend(y_tokens)
+
         self._x = x
         self._y = y
         return self
@@ -72,7 +75,16 @@ class Preprocessor:
         tokens = self._x[:self.max_feature_len - 2]
         pad_tokens = [self.pad_token()] * (self.max_feature_len - 2 - len(tokens))
         x = ['[CLS]'] + tokens + pad_tokens + ['[SEP]']
-        y = [self._other_symbol] + self._y[:self.max_feature_len - 2] + [self._other_symbol] * len(pad_tokens) + [self._other_symbol]
+        y = [self._other_symbol] + self._y[:self.max_feature_len - 2] + [self._other_symbol] * len(pad_tokens) + [
+            self._other_symbol]
+
+        assert len(y) == self.max_feature_len, "{} Size not {}, {} text \n{} annotations \n{} \n{}".format(len(y),
+                                                                                                           self.max_feature_len,
+                                                                                                           (
+                                                                                                           len(self._x),
+                                                                                                           len(
+                                                                                                               self._y)),
+                                                                                                           tokens, x, y)
 
         self._x = x
         self._y = y
