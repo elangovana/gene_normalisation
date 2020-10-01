@@ -5,10 +5,11 @@ import torch
 
 class Preprocessor:
 
-    def __init__(self, max_feature_len, tokeniser, entity_symbols, continution_symbols, other_symbol):
-        self._other_symbol = other_symbol
-        self._continution_symbols = continution_symbols
-        self._entity_symbols = entity_symbols
+    def __init__(self, max_feature_len, tokeniser, label_mapper):
+        self.label_mapper = label_mapper
+        self._other_symbol = self.label_mapper.other_label
+        self._continution_symbols = self.label_mapper.continuation_symbol
+        self._entity_symbols = self.label_mapper.entity_labels
         self.max_feature_len = max_feature_len
         self.tokeniser = tokeniser
         self._x = None
@@ -32,6 +33,7 @@ class Preprocessor:
         self._tokenise() \
             ._sequence_pad() \
             ._token_to_index() \
+            ._to_label_index() \
             ._to_tensor()
 
         return self._x, self._y
@@ -76,6 +78,17 @@ class Preprocessor:
         self._y = y
         return self
 
+    def _to_label_index(self):
+        """
+        Converts list of int to tensor
+        :return: self
+        """
+        if self._y is None: return self
+
+        self._y = [self.label_mapper.label_to_index(i) for i in self._y]
+
+        return self
+
     def _to_tensor(self):
         """
         Converts list of int to tensor
@@ -83,4 +96,5 @@ class Preprocessor:
         """
 
         self._x = torch.tensor(self._x)
+        self._y = torch.tensor(self._y)
         return self

@@ -1,0 +1,3 @@
+-r ./src/requirements.txt
+sagemaker==2.13.0
+jupyter==1.0.0

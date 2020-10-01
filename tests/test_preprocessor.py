@@ -16,8 +16,12 @@ class TestPreprocessor(TestCase):
         tokensier = MagicMock()
         tokensier.tokenize.side_effect = lambda x: x.split(" ")
 
-        sut = Preprocessor(max_feature_len=5, tokeniser=tokensier, entity_symbols=["s"],
-                           continution_symbols={"s": "sc"}, other_symbol="o")
+        label_mapper=MagicMock()
+        label_mapper.entity_labels=["s"]
+        label_mapper.continuation_symbol={"s": "sc"}
+        label_mapper.other_label="o"
+
+        sut = Preprocessor(max_feature_len=5, tokeniser=tokensier, label_mapper=label_mapper)
         sut._x = x
         sut._y = y
 
@@ -42,8 +46,12 @@ class TestPreprocessor(TestCase):
         tokensier = MagicMock()
         tokensier.tokenize.side_effect = lambda x: x.split(" ")
 
-        sut = Preprocessor(max_feature_len=10, tokeniser=tokensier, entity_symbols=["s"],
-                           continution_symbols={"s": "sc"}, other_symbol="o")
+        label_mapper = MagicMock()
+        label_mapper.entity_labels = ["s"]
+        label_mapper.continuation_symbol = {"s": "sc"}
+        label_mapper.other_label = "o"
+
+        sut = Preprocessor(max_feature_len=10, tokeniser=tokensier, label_mapper=label_mapper)
         sut._x = x
         sut._y = y
 
@@ -66,8 +74,12 @@ class TestPreprocessor(TestCase):
         tokensier = MagicMock()
         tokensier.tokenize.side_effect = lambda x: x.split(" ")
 
-        sut = Preprocessor(max_feature_len=5, tokeniser=tokensier, entity_symbols=["s"],
-                           continution_symbols={"s": "sc"}, other_symbol="o")
+        label_mapper = MagicMock()
+        label_mapper.entity_labels = ["s"]
+        label_mapper.continuation_symbol = {"s": "sc"}
+        label_mapper.other_label = "o"
+
+        sut = Preprocessor(max_feature_len=5, tokeniser=tokensier, label_mapper=label_mapper)
         sut._x = x
         sut._y = y
 

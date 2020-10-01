@@ -29,6 +29,27 @@ P00001606T0076|37 50|5-nucleotidase"""
         # Assert
         self.assertSequenceEqual(expected, actual)
 
+    def test___getitem___case2(self):
+        """
+        Test case if item is returned
+        :return:
+        """
+        # Arrange
+        input_raw = """P00008171T0002 The Trk/Nerve Growth Factor receptor mediates the rapid activation of a number of intracellular signaling proteins, including phosphatidylinositol 3-kinase (PI 3-kinase)."""
+        input_raw_handle = StringIO(input_raw)
+
+        input_annotation = """P00008171T0002|137 146|PI 3-kinase"""
+        input_annotation_handle = StringIO(input_annotation)
+        sut = BiocreativeDataset(input_raw_handle, input_annotation_handle)
+
+        expected = ["The Trk/Nerve Growth Factor receptor mediates the rapid activation of a number of intracellular signaling proteins, including phosphatidylinositol 3-kinase (", "PI 3-kinase", ")."], ["o", "s", "o"]
+
+        # Act
+        actual = sut[0]
+
+        # Assert
+        self.assertSequenceEqual(expected, actual)
+
     def test___getitem___no_entity(self):
         """
         Test case if item is returned with no entity

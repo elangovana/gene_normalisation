@@ -10,7 +10,7 @@ class BiocreativeNerLabelMapper:
 
     @property
     def num_classes(self):
-        return 3
+        return len(self._classes)
 
     def label_to_index(self, label: str) -> int:
         return self._classes_dict[label]
@@ -33,3 +33,7 @@ class BiocreativeNerLabelMapper:
     @property
     def positive_label(self):
         return 's'
+
+    @property
+    def positive_label_index(self):
+        return self._classes_dict[self.positive_label]

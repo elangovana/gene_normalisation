@@ -37,6 +37,7 @@ class BiocreativeDataset(Dataset):
         if self.transformer is not None:
             token_text, token_labels = self.transformer(token_text, token_labels)
 
+
         return token_text, token_labels
 
     def _parse(self, raw_lines):
@@ -62,9 +63,8 @@ class BiocreativeDataset(Dataset):
                 result[id] = []
 
             result[id].append({
-                # Convert to zero indexed
-                "start": int(start) - 1
-                , "end": int(end) - 1
+                "start": int(start)
+                , "end": int(end)
                 , "text": text
             })
         return result
@@ -81,11 +81,11 @@ class BiocreativeDataset(Dataset):
         i = 0
         for item in sorted_annotations:
             # Find true position within approximate locations specified
-            token_span = line[item["start"]:item["end"] + len(item["text"])]
+            token_span = line[item["start"]:]
             span_index = token_span.find(item["text"])
             length = len(item["text"])
 
-            assert span_index > -1, "Could not find {} in span {}".format(item["text"], token_span, )
+            assert span_index > -1, "Could not find {} in span {} in line {}, {}".format(item["text"], token_span, line, item)
 
             start_pos = item["start"] + span_index
 
