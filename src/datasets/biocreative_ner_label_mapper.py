@@ -24,7 +24,7 @@ class BiocreativeNerLabelMapper:
 
     @property
     def other_label(self) -> str:
-        return "s"
+        return "o"
 
     @property
     def continuation_symbol(self) -> Dict[str, str]:
