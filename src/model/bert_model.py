@@ -1,12 +1,13 @@
 from torch import nn
-from transformers import BertForSequenceClassification
+from transformers import BertForTokenClassification
 
 
 class BertModel(nn.Module):
 
     def __init__(self, model_name_or_dir, num_classes, fine_tune=True):
         super().__init__()
-        self.model = BertForSequenceClassification.from_pretrained(model_name_or_dir, num_labels=num_classes)
+
+        self.model = BertForTokenClassification.from_pretrained(model_name_or_dir, num_labels=num_classes)
         # Fine tune, freeze all other weights except classifier
         if fine_tune:
             self._freeze_base_weights()
