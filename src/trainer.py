@@ -128,8 +128,8 @@ class Train:
                 loss.backward()
 
                 losses_train.append(loss.item())
-                actual_train.extend(batch_y.cpu().tolist())
-                predicted_train.extend(torch.max(predicted, 1)[1].view(-1).cpu().tolist())
+                actual_train.extend(batch_y.view(-1).cpu().tolist())
+                predicted_train.extend(torch.max(predicted, dim=2)[1].view(-1).cpu().tolist())
 
                 # Step 5. Only update weights after gradients are accumulated for n steps
                 if (idx + 1) % self.accumulation_steps == 0:
@@ -140,13 +140,13 @@ class Train:
             # Print training set results
             self._logger.info("Train set result details:")
             train_loss = sum(losses_train) / len(losses_train)
-            train_score = f1_score(actual_train, predicted_train,pos_label=pos_label)
+            train_score = f1_score(actual_train, predicted_train,pos_label=pos_label, average='micro')
             self._logger.info("Train set result details: {}".format(train_score))
 
             # Print validation set results
             self._logger.info("Validation set result details:")
             val_actuals, val_predicted, val_loss = self.validate(loss_function, model_network, validation_iter)
-            val_score = f1_score(val_actuals, val_predicted, pos_label=pos_label)
+            val_score = f1_score(val_actuals, val_predicted, pos_label=pos_label,  average='micro')
             self._logger.info("Validation set result details: {} ".format(val_score))
 
             # Snapshot best score
@@ -202,8 +202,8 @@ class Train:
                 # compute loss
                 val_loss += loss_function(pred_batch_y.permute(0, 2, 1), val_y).item()
 
-                actuals = torch.cat([actuals, val_y])
-                pred_flat = torch.max(pred_batch_y, dim=1)[1].view(-1)
+                actuals = torch.cat([actuals, val_y.view(-1)])
+                pred_flat = torch.max(pred_batch_y, dim=2)[1].view(-1)
                 predicted = torch.cat([predicted, pred_flat])
 
         # Average loss
