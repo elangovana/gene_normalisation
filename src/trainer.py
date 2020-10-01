@@ -123,7 +123,8 @@ class Train:
 
                 # Step 4. Compute loss
                 self._logger.debug("Running loss")
-                loss = loss_function(predicted, batch_y) / self.accumulation_steps
+                # Reshape : torch.Size([batch, sequence, class]) to torch.Size([batch, class, sequence])
+                loss = loss_function(predicted.permute(0, 2, 1), batch_y) / self.accumulation_steps
                 loss.backward()
 
                 losses_train.append(loss.item())
@@ -199,7 +200,7 @@ class Train:
                 pred_batch_y = model_network(val_batch_idx)[0]
 
                 # compute loss
-                val_loss += loss_function(pred_batch_y, val_y).item()
+                val_loss += loss_function(pred_batch_y.permute(0, 2, 1), val_y).item()
 
                 actuals = torch.cat([actuals, val_y])
                 pred_flat = torch.max(pred_batch_y, dim=1)[1].view(-1)
