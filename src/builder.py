@@ -2,10 +2,9 @@ import logging
 import os
 
 from sklearn.model_selection import train_test_split
-import torch
 from torch import nn
 from torch.optim import Adam
-from torch.utils.data import random_split, DataLoader
+from torch.utils.data import DataLoader
 from transformers import BertTokenizer
 
 from collate import collate
@@ -14,6 +13,8 @@ from datasets.biocreative_ner_label_mapper import BiocreativeNerLabelMapper
 from model.bert_model import BertModel
 from preprocessor import Preprocessor
 from trainer import Train
+from top_k_cross_entropy_loss import TopKCrossEntropyLoss
+
 
 
 class Builder:
@@ -107,7 +108,9 @@ class Builder:
 
     def get_loss_function(self):
         if self._lossfunc is None:
-            self._lossfunc = nn.CrossEntropyLoss()
+            k = int(self.batch_size/2)
+            self._lossfunc = TopKCrossEntropyLoss(k)
+            #self._lossfunc  = nn.CrossEntropyLoss()
         return self._lossfunc
 
     def get_optimiser(self):
