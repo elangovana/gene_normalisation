@@ -6,7 +6,9 @@ from datasets.base_label_mapper import BaseLabelMapper
 class BiocreativeNerLabelMapper(BaseLabelMapper):
 
     def __init__(self):
-        self._classes = ['O', 'B-GENE', 'I-GENE']
+        classes = ['B-GENE', 'I-GENE']
+        # make sure 'O' is the first one (index 0), as it is used as the token for pad characters
+        self._classes = ['O'] + classes
         self._classes_dict = {c: i for i, c in enumerate(self._classes)}
         self._indices_dict = {i: c for i, c in enumerate(self._classes)}
 
