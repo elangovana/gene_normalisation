@@ -21,7 +21,7 @@ P00001606T0076|37 50|5-nucleotidase"""
         input_annotation_handle = StringIO(input_annotation)
         sut = BiocreativeDataset(input_raw_handle, input_annotation_handle)
 
-        expected = ["Comparison with ", "alkaline phosphatases", " and ", "5-nucleotidase"], ["o", "s", "o", "s"]
+        expected = ["Comparison with ", "alkaline phosphatases", " and ", "5-nucleotidase"], ["O", "B-GENE", "O", "B-GENE"]
 
         # Act
         actual = sut[0]
@@ -42,7 +42,8 @@ P00001606T0076|37 50|5-nucleotidase"""
         input_annotation_handle = StringIO(input_annotation)
         sut = BiocreativeDataset(input_raw_handle, input_annotation_handle)
 
-        expected = ["The Trk/Nerve Growth Factor receptor mediates the rapid activation of a number of intracellular signaling proteins, including phosphatidylinositol 3-kinase (", "PI 3-kinase", ")."], ["o", "s", "o"]
+        expected = ["The Trk/Nerve Growth Factor receptor mediates the rapid activation of a number of intracellular signaling proteins, including phosphatidylinositol 3-kinase (", "PI 3-kinase", ")."],\
+                   ["O", "B-GENE", "O"]
 
         # Act
         actual = sut[0]
@@ -65,7 +66,7 @@ P00001606T0076|37 50|5-nucleotidase"""
         input_annotation_handle = StringIO(input_annotation)
         sut = BiocreativeDataset(input_raw_handle, input_annotation_handle)
 
-        expected = ["Pharmacologic aspects of neonatal hyperbilirubinemia."], ["o"]
+        expected = ["Pharmacologic aspects of neonatal hyperbilirubinemia."], ["O"]
 
         # Act
         actual = sut[1]

@@ -32,8 +32,12 @@ class BiocreativeNerLabelMapper:
 
     @property
     def positive_label(self):
-        return 'B-GENE'
+        return self.gene_label
 
     @property
     def positive_label_index(self):
         return self._classes_dict[self.positive_label]
+
+    @property
+    def gene_label(self):
+        return 'B-GENE'

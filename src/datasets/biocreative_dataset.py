@@ -1,5 +1,7 @@
 from torch.utils.data import Dataset
 
+from datasets.biocreative_ner_label_mapper import BiocreativeNerLabelMapper
+
 
 class BiocreativeDataset(Dataset):
     """
@@ -10,6 +12,7 @@ class BiocreativeDataset(Dataset):
         # Load raw train
         self.transformer = transformer
         self._text_lines = self._parse(self._readlines(train_file_or_handle))
+        self.label_mapper = BiocreativeNerLabelMapper()
 
         # Load annotations
         self._annotation = {}
@@ -71,7 +74,7 @@ class BiocreativeDataset(Dataset):
 
     def _tokenise(self, line, annotation=None):
         if annotation is None:
-            return [line], ["o"]
+            return [line], [self.label_mapper.other_label]
 
         tokens = []
         tokens_labels = []
@@ -93,19 +96,19 @@ class BiocreativeDataset(Dataset):
             other_token = line[i: start_pos]
             if len(other_token) > 0:
                 tokens.append(other_token)
-                tokens_labels.append("o")
+                tokens_labels.append(self.label_mapper.other_label)
 
             # Start entity
             end_pos = start_pos + length
             entity_token = line[start_pos: end_pos]
             tokens.append(entity_token)
-            tokens_labels.append("s")
+            tokens_labels.append(self.label_mapper.gene_label)
 
             i = end_pos
 
         other_token = line[i:]
         if len(other_token) > 0:
             tokens.append(other_token)
-            tokens_labels.append("o")
+            tokens_labels.append(self.label_mapper.other_label)
 
         return tokens, tokens_labels
