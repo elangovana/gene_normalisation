@@ -1,7 +1,9 @@
 from typing import List, Dict
 
+from datasets.base_label_mapper import BaseLabelMapper
 
-class BiocreativeNerLabelMapper:
+
+class BiocreativeNerLabelMapper(BaseLabelMapper):
 
     def __init__(self):
         self._classes = ['O', 'B-GENE', 'I-GENE']

@@ -22,17 +22,16 @@ import os
 import torch
 import torch.nn as nn
 import torch.utils.data
-from sklearn.metrics import f1_score
-
+from seqeval.metrics import f1_score
 
 class Train:
     """
     Trains on GPU / CPU
     """
 
-    def __init__(self, model_dir, device=None, epochs=10, early_stopping_patience=20, checkpoint_frequency=1,
+    def __init__(self, model_dir, label_mapper, device=None, epochs=10, early_stopping_patience=20, checkpoint_frequency=1,
                  checkpoint_dir=None,
-                 accumulation_steps=1):
+                 accumulation_steps=1, ):
         self.model_dir = model_dir
         self.accumulation_steps = accumulation_steps
         self.checkpoint_dir = checkpoint_dir
@@ -40,6 +39,7 @@ class Train:
         self.early_stopping_patience = early_stopping_patience
         self.epochs = epochs
         self.snapshotter = None
+        self.label_mapper = label_mapper
 
         # Set up device is not set
         available_device = "cuda:0" if torch.cuda.is_available() else "cpu"
@@ -56,6 +56,13 @@ class Train:
     @property
     def _logger(self):
         return logging.getLogger(__name__)
+
+    def compute_seq_fscore(self, actual, predicted):
+        actual = self.convert_index_to_labels(actual)
+        predicted = self.convert_index_to_labels(predicted)
+
+        return f1_score(actual, predicted,  average='macro')
+
 
     def snapshot(self, model, model_dir, prefix="best_snaphsot"):
         snapshot_prefix = os.path.join(model_dir, prefix)
@@ -128,8 +135,8 @@ class Train:
                 loss.backward()
 
                 losses_train.append(loss.item())
-                actual_train.extend(batch_y.view(-1).cpu().tolist())
-                predicted_train.extend(torch.max(predicted, dim=2)[1].view(-1).cpu().tolist())
+                actual_train.extend(batch_y.cpu().tolist())
+                predicted_train.extend(torch.max(predicted, dim=2)[1].view(len(predicted), -1).cpu().tolist())
 
                 # Step 5. Only update weights after gradients are accumulated for n steps
                 if (idx + 1) % self.accumulation_steps == 0:
@@ -140,13 +147,13 @@ class Train:
             # Print training set results
             self._logger.info("Train set result details:")
             train_loss = sum(losses_train) / len(losses_train)
-            train_score = f1_score(actual_train, predicted_train,pos_label=pos_label, average='micro')
+            train_score = self.compute_seq_fscore(actual_train, predicted_train)
             self._logger.info("Train set result details: {}".format(train_score))
 
             # Print validation set results
             self._logger.info("Validation set result details:")
             val_actuals, val_predicted, val_loss = self.validate(loss_function, model_network, validation_iter)
-            val_score = f1_score(val_actuals, val_predicted, pos_label=pos_label,  average='micro')
+            val_score = self.compute_seq_fscore(val_actuals, val_predicted)
             self._logger.info("Validation set result details: {} ".format(val_score))
 
             # Snapshot best score
@@ -202,8 +209,8 @@ class Train:
                 # compute loss
                 val_loss += loss_function(pred_batch_y.permute(0, 2, 1), val_y).item()
 
-                actuals = torch.cat([actuals, val_y.view(-1)])
-                pred_flat = torch.max(pred_batch_y, dim=2)[1].view(-1)
+                actuals = torch.cat([actuals, val_y])
+                pred_flat = torch.max(pred_batch_y, dim=2)[1].view(len(pred_batch_y),-1)
                 predicted = torch.cat([predicted, pred_flat])
 
         # Average loss
@@ -234,3 +241,12 @@ class Train:
                 checkpoint = torch.load(model_file)
                 loaded_weights = checkpoint['model_state_dict']
         return loaded_weights
+
+    def convert_index_to_labels(self, batch_labels_seq):
+        result = []
+        for seq_items in batch_labels_seq:
+            seq_labels = []
+            for i in seq_items:
+                seq_labels.append(self.label_mapper.index_to_label(i))
+            result.append(seq_labels)
+        return result

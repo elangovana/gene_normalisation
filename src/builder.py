@@ -94,14 +94,14 @@ class Builder:
         if self._network is not None: return self._network
 
         # If checkpoint file is available, load from checkpoint
-        self._network = self.get_trainer().try_load_model_from_checkpoint()
+        model_weights = self.get_trainer().try_load_model_from_checkpoint()
 
-        # Only load from BERT pretrained when no checkpoint is available
-        if self._network is None:
-            self._logger.info(
-                "No checkpoint models found.. Loading pretrained BERT {}".format(self._bert_model_name))
-            self._network = BertModel(self._bert_model_name, self.get_label_mapper().num_classes,
-                                      fine_tune=self.fine_tune)
+        self._network = BertModel(self._bert_model_name, self.get_label_mapper().num_classes,
+                                  fine_tune=self.fine_tune)
+
+        #  Load checkpoint when checkpoint is available
+        if model_weights   is not  None:
+            self._network.load_state_dict(model_weights)
 
         return self._network
 
@@ -117,7 +117,7 @@ class Builder:
 
     def get_trainer(self):
         if self._trainer is None:
-            self._trainer = Train(model_dir=self.model_dir, epochs=self.epochs,
+            self._trainer = Train(model_dir=self.model_dir,label_mapper=self.get_label_mapper(), epochs=self.epochs,
                                   early_stopping_patience=self.early_stopping_patience,
                                   checkpoint_frequency=self.checkpoint_frequency,
                                   checkpoint_dir=self.checkpoint_dir,
