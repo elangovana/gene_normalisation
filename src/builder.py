@@ -21,7 +21,7 @@ class Builder:
 
     def __init__(self, train_data, annotation_file, model_dir, epochs=10, early_stopping_patience=5,
                  checkpoint_frequency=3, checkpoint_dir=None, learning_rate=0.0001, batch_size=8, max_seq_len=512,
-                 fine_tune=False, num_workers=None, grad_accumulation_steps=4, bert_config=None, tokeniser=None):
+                 fine_tune=False, num_workers=None, grad_accumulation_steps=4):
         self.grad_accumulation_steps = grad_accumulation_steps
         self.checkpoint_dir = checkpoint_dir
         self.checkpoint_frequency = checkpoint_frequency
@@ -37,8 +37,7 @@ class Builder:
         self._max_seq_len = max_seq_len
         self._bert_model_name = "bert-base-cased"
         self._token_lower_case = False
-        self._bert_config = bert_config
-        self._tokenisor = tokeniser
+
 
         if self._num_workers <= 0:
             self._num_workers = 0
@@ -50,6 +49,15 @@ class Builder:
         self._network = None
         self._optimiser=None
         self._lossfunc=None
+        self._bert_config = None
+        self._tokenisor = None
+
+
+    def set_bert_config(self, value):
+        self._bert_config = value
+
+    def set_tokensior(self, value):
+        self._tokenisor = value
 
     @property
     def _logger(self):
