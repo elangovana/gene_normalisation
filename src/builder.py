@@ -14,6 +14,7 @@ from model.bert_model import BertModel
 from preprocessor import Preprocessor
 from trainer import Train
 from top_k_cross_entropy_loss import TopKCrossEntropyLoss
+from ner_cross_entropy_loss import NerCrossEntropyLoss
 
 
 
@@ -119,9 +120,9 @@ class Builder:
 
     def get_loss_function(self):
         if self._lossfunc is None:
-            k = int(self.batch_size/2)
-            self._lossfunc = TopKCrossEntropyLoss(k)
-            #self._lossfunc  = nn.CrossEntropyLoss()
+            k = int(self.batch_size)
+            # self._lossfunc = TopKCrossEntropyLoss(k)
+            self._lossfunc = NerCrossEntropyLoss()
         return self._lossfunc
 
     def get_optimiser(self):
