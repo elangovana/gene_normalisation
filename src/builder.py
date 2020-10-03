@@ -21,7 +21,7 @@ class Builder:
 
     def __init__(self, train_data, annotation_file, model_dir, epochs=10, early_stopping_patience=5,
                  checkpoint_frequency=3, checkpoint_dir=None, learning_rate=0.0001, batch_size=8, max_seq_len=512,
-                 fine_tune=False, num_workers=None, grad_accumulation_steps=4):
+                 fine_tune=False, num_workers=None, grad_accumulation_steps=4, bert_config=None, tokeniser=None):
         self.grad_accumulation_steps = grad_accumulation_steps
         self.checkpoint_dir = checkpoint_dir
         self.checkpoint_frequency = checkpoint_frequency
@@ -37,6 +37,8 @@ class Builder:
         self._max_seq_len = max_seq_len
         self._bert_model_name = "bert-base-cased"
         self._token_lower_case = False
+        self._bert_config = bert_config
+        self._tokenisor = tokeniser
 
         if self._num_workers <= 0:
             self._num_workers = 0
@@ -54,8 +56,9 @@ class Builder:
         return logging.getLogger(__name__)
 
     def get_preprocessor(self):
-        tokeniser = BertTokenizer.from_pretrained(self._bert_model_name, do_lower_case=self._token_lower_case)
-
+        tokeniser = self._tokenisor
+        if tokeniser is None:
+            tokeniser = BertTokenizer.from_pretrained(self._bert_model_name, do_lower_case=self._token_lower_case)
 
         preprocessor = Preprocessor(max_feature_len=self._max_seq_len, tokeniser=tokeniser, label_mapper=self.get_label_mapper())
         return preprocessor
@@ -98,7 +101,7 @@ class Builder:
         model_weights = self.get_trainer().try_load_model_from_checkpoint()
 
         self._network = BertModel(self._bert_model_name, self.get_label_mapper().num_classes,
-                                  fine_tune=self.fine_tune)
+                                  fine_tune=self.fine_tune, config= self._bert_config)
 
         #  Load checkpoint when checkpoint is available
         if model_weights   is not  None:
