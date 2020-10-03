@@ -4,7 +4,6 @@ import torch
 from torch.nn import CrossEntropyLoss
 
 from ner_cross_entropy_loss import NerCrossEntropyLoss
-from top_k_cross_entropy_loss import TopKCrossEntropyLoss
 
 
 
