@@ -3,7 +3,7 @@ from unittest import TestCase
 import torch
 from torch.nn import CrossEntropyLoss
 
-from top_k_cross_entropy_loss import TopKCrossEntropyLoss
+from loss.top_k_cross_entropy_loss import TopKCrossEntropyLoss
 
 
 class TestTopKCrossEntropyLoss(TestCase):

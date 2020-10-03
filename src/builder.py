@@ -13,8 +13,8 @@ from datasets.biocreative_ner_label_mapper import BiocreativeNerLabelMapper
 from model.bert_model import BertModel
 from preprocessor import Preprocessor
 from trainer import Train
-from top_k_cross_entropy_loss import TopKCrossEntropyLoss
-from ner_cross_entropy_loss import NerCrossEntropyLoss
+from loss.top_k_cross_entropy_loss import TopKCrossEntropyLoss
+from loss.ner_cross_entropy_loss import NerCrossEntropyLoss
 
 
 

@@ -3,7 +3,7 @@ from unittest import TestCase
 import torch
 from torch.nn import CrossEntropyLoss
 
-from ner_cross_entropy_loss import NerCrossEntropyLoss
+from loss.ner_cross_entropy_loss import NerCrossEntropyLoss
 
 
 
