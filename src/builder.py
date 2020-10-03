@@ -101,7 +101,7 @@ class Builder:
         model_weights = self.get_trainer().try_load_model_from_checkpoint()
 
         self._network = BertModel(self._bert_model_name, self.get_label_mapper().num_classes,
-                                  fine_tune=self.fine_tune, config= self._bert_config)
+                                  fine_tune=self.fine_tune, bert_config= self._bert_config)
 
         #  Load checkpoint when checkpoint is available
         if model_weights   is not  None:
