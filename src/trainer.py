@@ -58,8 +58,7 @@ class Train:
         return logging.getLogger(__name__)
 
     def compute_seq_fscore(self, actual, predicted):
-        actual = self.convert_index_to_labels(actual)
-        predicted = self.convert_index_to_labels(predicted)
+        actual,predicted = self.convert_index_to_labels(actual, predicted)
 
         return f1_score(actual, predicted,  average='macro')
 
@@ -242,11 +241,17 @@ class Train:
                 loaded_weights = checkpoint['model_state_dict']
         return loaded_weights
 
-    def convert_index_to_labels(self, batch_labels_seq):
-        result = []
-        for seq_items in batch_labels_seq:
-            seq_labels = []
-            for i in seq_items:
-                seq_labels.append(self.label_mapper.index_to_label(i))
-            result.append(seq_labels)
-        return result
+    def convert_index_to_labels(self, batch_labels_seq_actual, batch_labels_seq_pred):
+        a_result = []
+        e_result = []
+        for a_seq_items, e_seq_items in zip(batch_labels_seq_actual, batch_labels_seq_pred):
+            a_seq_labels = []
+            e_seq_labels = []
+            for a, e in zip(a_seq_items, e_seq_items):
+                # If pad character
+                if a < 0: continue
+                a_seq_labels.append(self.label_mapper.index_to_label(a))
+                e_seq_labels.append(self.label_mapper.index_to_label(e))
+            a_result.append(a_seq_labels)
+            e_result.append(e_seq_labels)
+        return a_result,e_result

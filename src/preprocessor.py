@@ -75,16 +75,8 @@ class Preprocessor:
         tokens = self._x[:self.max_feature_len - 2]
         pad_tokens = [self.pad_token()] * (self.max_feature_len - 2 - len(tokens))
         x = ['[CLS]'] + tokens + pad_tokens + ['[SEP]']
-        y = [self._other_symbol] + self._y[:self.max_feature_len - 2] + [self._other_symbol] * len(pad_tokens) + [
-            self._other_symbol]
-
-        assert len(y) == self.max_feature_len, "{} Size not {}, {} text \n{} annotations \n{} \n{}".format(len(y),
-                                                                                                           self.max_feature_len,
-                                                                                                           (
-                                                                                                           len(self._x),
-                                                                                                           len(
-                                                                                                               self._y)),
-                                                                                                           tokens, x, y)
+        y = [self.pad_token()] + self._y[:self.max_feature_len - 2] + [self.pad_token()] * len(pad_tokens) + [
+            self.pad_token()]
 
         self._x = x
         self._y = y
@@ -97,7 +89,15 @@ class Preprocessor:
         """
         if self._y is None: return self
 
-        self._y = [self.label_mapper.label_to_index(i) for i in self._y]
+        new_y = []
+        old_y = self._y
+
+        for i in old_y:
+            # If the preprocessor introduced pad character, then customise the index to -1
+            index = -1 if i == self.pad_token() else self.label_mapper.label_to_index(i)
+            new_y.append(index)
+
+        self._y = new_y
 
         return self
 
