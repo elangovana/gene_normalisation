@@ -52,9 +52,6 @@ class Train:
 
 
     def snapshot(self, model, model_dir, prefix="best_snaphsot"):
-        # snapshot_prefix = os.path.join(model_dir, prefix)
-        # snapshot_path = snapshot_prefix + 'model.pt'
-
         self._logger.info("Saving model to {}".format(model_dir))
 
         # If nn.dataparallel, get the underlying module
@@ -63,7 +60,6 @@ class Train:
 
         model.save(model_dir)
 
-        # torch.save(model, snapshot_path)
 
     def run_train(self, train_iter, validation_iter, model_network, loss_function, optimizer, pos_label):
         """
