@@ -117,13 +117,13 @@ class TestPreprocessor(TestCase):
     def test__to_label_to_index(self):
         """Make sure label to index for y works"""
         # Arrange
-        x = ["[CLS]" "Comparison", "with", "alkaline", "phosphatases", "and", "5-nucleotidase" , "[PAD]"]
-        y = ["[PAD]","o", "o", "s", "sc", "o", "s", "[PAD]"]
+        x = ["[CLS]" "Comparison", "with", "alkaline", "phosphatases", "and", "5-nucleotidase", "[PAD]"]
+        y = ["[PAD]", "o", "o", "s", "sc", "o", "s", "[PAD]"]
         labels = ["s", "sc", "o"]
 
         fake_labels = ["[PAD]"] + ["s", "sc", "o"]
 
-        expected_y = [fake_labels.index(x) -1 for x in y]
+        expected_y = [fake_labels.index(x) - 1 for x in y]
 
         tokensier = MagicMock()
         tokensier.tokenize.side_effect = lambda x: x.split(" ")
@@ -132,7 +132,7 @@ class TestPreprocessor(TestCase):
         label_mapper.entity_labels = ["s"]
         label_mapper.continuation_symbol = {"s": "sc"}
         label_mapper.other_label = "o"
-        label_mapper.label_to_index = lambda  x : labels.index(x)
+        label_mapper.label_to_index = lambda x: labels.index(x)
 
         sut = Preprocessor(max_feature_len=5, tokeniser=tokensier, label_mapper=label_mapper)
         sut._x = x
@@ -143,3 +143,24 @@ class TestPreprocessor(TestCase):
 
         # Assert
         self.assertSequenceEqual(expected_y, sut._y)
+
+    def test__call__no_label_runs_without_exceptions(self):
+        x = ["Comparison with", "alkaline phosphatases", "and", "5-nucleotidase"]
+        labels = ["s", "sc", "o"]
+
+        tokensier = MagicMock()
+        tokensier.tokenize.side_effect = lambda x: x.split(" ")
+
+        label_mapper = MagicMock()
+        label_mapper.entity_labels = ["s"]
+        label_mapper.continuation_symbol = {"s": "sc"}
+        label_mapper.other_label = "o"
+        label_mapper.label_to_index = lambda x: labels.index(x)
+
+        sut = Preprocessor(max_feature_len=5, tokeniser=tokensier, label_mapper=label_mapper)
+
+        # Act
+        x, y = sut(x)
+
+        # Assert
+        self.assertIsNone(y)

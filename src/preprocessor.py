@@ -38,24 +38,33 @@ class Preprocessor:
 
         return self._x, self._y
 
-    def _tokenise(self):
+    def tokenise(self, x, y=None):
         """
         Converts text and y to continuation to tokens e.g.
          ["The protein", "KLK3 kinase"] would become ["The", "pro" "##tien", "KL" ,"#K3", "kinase"]
          ["o","s"] becomes ["o","o", "o", "s", "sc", "sc"]
-        """
-        x = []
-        y = []
-        for xi, yi in zip(self._x, self._y):
+         """
+        new_x = []
+        new_y = None if y is None else []
+
+        for i, xi in enumerate(x):
             x_tokens = self.tokeniser.tokenize(xi)
-            y_tokens = []
+            new_x.extend(x_tokens)
+
+            if y is None: continue
+            yi = y[i]
             if len(x_tokens) > 0:
                 y_tokens = [yi] + [self._continution_symbols.get(yi, yi)] * (len(x_tokens) - 1)
-            x.extend(x_tokens)
-            y.extend(y_tokens)
+                new_y.extend(y_tokens)
 
-        self._x = x
-        self._y = y
+        return new_x, new_y
+
+    def _tokenise(self):
+
+        new_x, new_y = self.tokenise(self._x, self._y)
+
+        self._x = new_x
+        self._y = new_y
         return self
 
     def _token_to_index(self):
@@ -72,15 +81,24 @@ class Preprocessor:
         Converts the tokens to fixed size and formats it according to bert
         :return: self
         """
-        tokens = self._x[:self.max_feature_len - 2]
-        pad_tokens = [self.pad_token()] * (self.max_feature_len - 2 - len(tokens))
-        x = ['[CLS]'] + tokens + pad_tokens + ['[SEP]']
-        y = [self.pad_token()] + self._y[:self.max_feature_len - 2] + [self.pad_token()] * len(pad_tokens) + [
-            self.pad_token()]
+        old_x = self._x
+        old_y = self._y
 
-        self._x = x
-        self._y = y
+        new_x, new_y = self.pad(old_x, old_y)
+
+        self._x = new_x
+        self._y = new_y
         return self
+
+    def pad(self, x, y=None):
+        tokens = x[:self.max_feature_len - 2]
+        pad_tokens = [self.pad_token()] * (self.max_feature_len - 2 - len(tokens))
+        new_x = ['[CLS]'] + tokens + pad_tokens + ['[SEP]']
+        new_y = None
+        if y is not None:
+            new_y = [self.pad_token()] + self._y[:self.max_feature_len - 2] + [self.pad_token()] * len(pad_tokens) + [
+                self.pad_token()]
+        return new_x, new_y
 
     def _to_label_index(self):
         """
@@ -107,6 +125,9 @@ class Preprocessor:
         :return: self
         """
 
-        self._x = torch.tensor(self._x)
-        self._y = torch.tensor(self._y)
+        old_x = self._x
+        old_y = self._y
+
+        self._x = torch.tensor(old_x)
+        self._y = torch.tensor(old_y) if old_y is not None else None
         return self
