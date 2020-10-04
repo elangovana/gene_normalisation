@@ -1,7 +1,7 @@
 from io import StringIO
 from unittest import TestCase
 
-from src.datasets.biocreative_dataset import BiocreativeDataset
+from datasets.biocreative_dataset import BiocreativeDataset
 
 
 class TestBiocreativeDataset(TestCase):
