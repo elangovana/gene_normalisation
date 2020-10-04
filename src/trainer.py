@@ -1,19 +1,3 @@
-# ***************************************************************************************
-# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.                    *
-#                                                                                       *
-# Permission is hereby granted, free of charge, to any person obtaining a copy of this  *
-# software and associated documentation files (the "Software"), to deal in the Software *
-# without restriction, including without limitation the rights to use, copy, modify,    *
-# merge, publish, distribute, sublicense, and/or sell copies of the Software, and to    *
-# permit persons to whom the Software is furnished to do so.                            *
-#                                                                                       *
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,   *
-# INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A         *
-# PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT    *
-# HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION     *
-# OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE        *
-# SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                *
-# ***************************************************************************************
 import datetime
 import glob
 import logging
@@ -23,6 +7,7 @@ import torch
 import torch.nn as nn
 import torch.utils.data
 from seqeval.metrics import f1_score
+
 
 class Train:
     """
@@ -60,20 +45,25 @@ class Train:
     def compute_seq_fscore(self, actual, predicted):
         actual,predicted = self.convert_index_to_labels(actual, predicted)
 
+        self._logger.debug("actual {}\npredicted {}".format(actual[1:10], predicted[1:10]))
+
+
         return f1_score(actual, predicted,  average='macro')
 
 
     def snapshot(self, model, model_dir, prefix="best_snaphsot"):
-        snapshot_prefix = os.path.join(model_dir, prefix)
-        snapshot_path = snapshot_prefix + 'model.pt'
+        # snapshot_prefix = os.path.join(model_dir, prefix)
+        # snapshot_path = snapshot_prefix + 'model.pt'
 
-        self._logger.info("Snapshot model to {}".format(snapshot_path))
+        self._logger.info("Saving model to {}".format(model_dir))
 
         # If nn.dataparallel, get the underlying module
         if isinstance(model, torch.nn.DataParallel):
             model = model.module
 
-        torch.save(model, snapshot_path)
+        model.save(model_dir)
+
+        # torch.save(model, snapshot_path)
 
     def run_train(self, train_iter, validation_iter, model_network, loss_function, optimizer, pos_label):
         """
@@ -168,7 +158,7 @@ class Train:
 
             # Checkpoint
             if self.checkpoint_dir and (epoch % self.checkpoint_frequency == 0):
-                self.create_checkpoint(model_network, self.checkpoint_dir)
+                self.snapshot(model_network, model_dir=self.checkpoint_dir)
 
             # evaluate performance on validation set periodically
             self._logger.info(val_log_template.format((datetime.datetime.now() - start).seconds,
@@ -216,30 +206,6 @@ class Train:
         val_loss = val_loss / len(actuals)
         return actuals.cpu().tolist(), predicted.cpu().tolist(), val_loss
 
-    def create_checkpoint(self, model, checkpoint_dir):
-        checkpoint_path = os.path.join(checkpoint_dir, 'checkpoint.pt')
-
-        self._logger.info("Checkpoint model to {}".format(checkpoint_path))
-
-        # If nn.dataparallel, get the underlying module
-        if isinstance(model, torch.nn.DataParallel):
-            model = model.module
-
-        torch.save({
-            'model_state_dict': model.state_dict(),
-        }, checkpoint_path)
-
-    def try_load_model_from_checkpoint(self):
-        loaded_weights = None
-        if self.checkpoint_dir is not None:
-            model_files = list(glob.glob("{}/*.pt".format(self.checkpoint_dir)))
-            if len(model_files) > 0:
-                model_file = model_files[0]
-                self._logger.info(
-                    "Loading checkpoint {} , found {} checkpoint files".format(model_file, len(model_files)))
-                checkpoint = torch.load(model_file)
-                loaded_weights = checkpoint['model_state_dict']
-        return loaded_weights
 
     def convert_index_to_labels(self, batch_labels_seq_actual, batch_labels_seq_pred):
         a_result = []
@@ -255,3 +221,4 @@ class Train:
             a_result.append(a_seq_labels)
             e_result.append(e_seq_labels)
         return a_result,e_result
+

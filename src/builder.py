@@ -39,7 +39,6 @@ class Builder:
         self._bert_model_name = "bert-base-cased"
         self._token_lower_case = False
 
-
         if self._num_workers <= 0:
             self._num_workers = 0
 
@@ -106,15 +105,12 @@ class Builder:
         # If network already loaded simply return
         if self._network is not None: return self._network
 
-        # If checkpoint file is available, load from checkpoint
-        model_weights = self.get_trainer().try_load_model_from_checkpoint()
+        if self._has_checkpoint():
+            self._bert_model_name = self.checkpoint_dir
 
         self._network = BertModel(self._bert_model_name, self.get_label_mapper().num_classes,
                                   fine_tune=self.fine_tune, bert_config= self._bert_config)
 
-        #  Load checkpoint when checkpoint is available
-        if model_weights   is not  None:
-            self._network.load_state_dict(model_weights)
 
         return self._network
 
@@ -139,3 +135,8 @@ class Builder:
                                   accumulation_steps=self.grad_accumulation_steps)
 
         return self._trainer
+
+    def _has_checkpoint(self):
+        if self.checkpoint_dir is None: return False
+
+        return len(os.listdir(self.checkpoint_dir)) > 0

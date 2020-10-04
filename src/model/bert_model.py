@@ -4,7 +4,8 @@ from transformers import BertForTokenClassification
 
 class BertModel(nn.Module):
 
-    def __init__(self, pretrained_model_name_or_dir = None, pretrained_num_classes = None, fine_tune=True, bert_config=None):
+    def __init__(self, pretrained_model_name_or_dir=None, pretrained_num_classes=None, fine_tune=False,
+                 bert_config=None):
         """
         Buils a bert model for token classification
         :param pretrained_model_name_or_dir: Specify the pretrained_model_name_or_dir to load from to start from a pretrained model
@@ -28,3 +29,6 @@ class BertModel(nn.Module):
 
     def forward(self, *input):
         return self.model(*input)
+
+    def save(self, path):
+        self.model.save_pretrained(save_directory=path)
