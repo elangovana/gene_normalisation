@@ -8,7 +8,7 @@ class BiocreativeDataset(Dataset):
     Represents a biocreative II dataset
     """
 
-    def __init__(self, train_file_or_handle, annotation_file_or_handle, transformer=None):
+    def __init__(self, train_file_or_handle, annotation_file_or_handle=None, transformer=None):
         # Load raw train
         self.transformer = transformer
         self._text_lines = self._parse(self._readlines(train_file_or_handle))
