@@ -15,6 +15,10 @@ class BertNerPositionConverter:
 
     """
 
+    @property
+    def _logger(self):
+        return logging.getLogger(__name__)
+
     def locate_position(self, original_text, entities_detected, other_label, entity_labels, continuation_symbol_dict,
                         doc_id=""):
         offset = 0
@@ -27,13 +31,13 @@ class BertNerPositionConverter:
             entity_type = ner_detection["entity"]
             ner_i += 1
 
-            if raw_token in ('[CLS]'): continue
+            if raw_token in ['[CLS]']: continue
 
             if entity_type not in entity_labels:
                 offset = offset + len(raw_token.lstrip("#"))
                 continue
 
-            entity_text = raw_token
+            entity_text = raw_token.lstrip("#")
             # continue to search for the next parts of the entity
             while ner_i < len(entities_detected):
                 continue_ner_detection = entities_detected[ner_i]
@@ -49,21 +53,23 @@ class BertNerPositionConverter:
 
             entity_npsp = entity_text.replace(" ", "")
             assert entity_npsp in original_text_npsp, "`{}` not in {}".format(entity_text, original_text_npsp)
-            margin = 1
+            margin = 0
             approx_offset = offset - margin if offset > margin else 0
             approx_end = approx_offset + len(entity_npsp) + margin * 2
             count_occ = original_text_npsp.count(entity_npsp, approx_offset, approx_end)
-            assert count_occ == 1, "{} - found `{}` n times {} in {} after offset {} {}".format(doc_id, entity_npsp,
-                                                                                                count_occ,
-                                                                                                original_text_npsp,
-                                                                                                approx_offset,
-                                                                                                approx_end)
+            if not (count_occ == 1):
+                self._logger.warning("{} - found `{}` n times {} in {} after offset {} {}".format(doc_id, entity_npsp,
+                                                                                                  count_occ,
+                                                                                                  original_text_npsp,
+                                                                                                  approx_offset,
+                                                                                                  approx_end))
 
             start_pos = original_text_npsp.find(entity_npsp, approx_offset, approx_end)
             end_pos = start_pos + len(entity_npsp) - 1
             result.append((doc_id, start_pos, end_pos, entity_text))
 
-            ner_i = ner_i - 1
+            # Only reset if it is not end of entities
+            if ner_i < len(entities_detected): ner_i = ner_i - 1
             offset = start_pos + len(entity_npsp)
 
         return result

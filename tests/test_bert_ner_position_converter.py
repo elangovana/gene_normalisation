@@ -49,7 +49,7 @@ class TestBertNerPositionConverter(TestCase):
         # Assert
         self.assertSequenceEqual(expected, actual)
 
-    def test_locate_position_entity_begins_with_token(self):
+    def test_locate_position_entity_last_token(self):
         # Arrange
         sut = BertNerPositionConverter()
         input_raw = "growth arrest inG"
@@ -57,6 +57,7 @@ class TestBertNerPositionConverter(TestCase):
 
         expected = [
             (1, 14, 14, 'G')
+
         ]
 
         entities_detected = [{'raw_token': '[CLS]', 'probability': 0.9999691247940063, 'entity': 'O'},
@@ -64,6 +65,80 @@ class TestBertNerPositionConverter(TestCase):
                              {'raw_token': 'arrest', 'probability': 0.9998175501823425, 'entity': 'O'},
                              {'raw_token': 'in', 'probability': 0.9993170499801636, 'entity': 'O'},
                              {'raw_token': '##G', 'probability': 0.8757198452949524, 'entity': 'B-GENE'}]
+        # Act
+        actual = sut.locate_position(input_raw, entities_detected, "O", "B-GENE", {"B-GENE": "I-GENE"}, docid)
+
+        # Assert
+        self.assertSequenceEqual(expected, actual)
+
+    def test_locate_position_case2(self):
+        sut = BertNerPositionConverter()
+        docid = "DOC1"
+        expected = [
+            ('DOC1', 37, 41, 'Smad3')
+            , ('DOC1', 43, 47, 'Smad4')
+            , ('DOC1', 171, 173, 'AP1')
+        ]
+
+        input_raw = "Taken together, these data suggest that the Smad3/Smad4 complex has at least two separable nuclear functions: it forms a rapid, yet transient sequence-specific DNA binding complex, and it potentiates AP1-dependent transcriptional activation."
+        entities_detected = [{'raw_token': '[CLS]', 'probability': 0.9999759197235107, 'entity': 'O'},
+                             {'raw_token': 'Take', 'probability': 0.999964714050293, 'entity': 'O'},
+                             {'raw_token': '##n', 'probability': 0.9999703168869019, 'entity': 'O'},
+                             {'raw_token': 'together', 'probability': 0.9999674558639526, 'entity': 'O'},
+                             {'raw_token': ',', 'probability': 0.9999845027923584, 'entity': 'O'},
+                             {'raw_token': 'these', 'probability': 0.9999836683273315, 'entity': 'O'},
+                             {'raw_token': 'data', 'probability': 0.9999768733978271, 'entity': 'O'},
+                             {'raw_token': 'suggest', 'probability': 0.9999716281890869, 'entity': 'O'},
+                             {'raw_token': 'that', 'probability': 0.9999637603759766, 'entity': 'O'},
+                             {'raw_token': 'the', 'probability': 0.9999173879623413, 'entity': 'O'},
+                             {'raw_token': 'S', 'probability': 0.9997923970222473, 'entity': 'B-GENE'},
+                             {'raw_token': '##mad', 'probability': 0.9998654127120972, 'entity': 'I-GENE'},
+                             {'raw_token': '##3', 'probability': 0.9998568296432495, 'entity': 'I-GENE'},
+                             {'raw_token': '/', 'probability': 0.999716579914093, 'entity': 'O'},
+                             {'raw_token': 'S', 'probability': 0.9997801184654236, 'entity': 'B-GENE'},
+                             {'raw_token': '##mad', 'probability': 0.9997991919517517, 'entity': 'I-GENE'},
+                             {'raw_token': '##4', 'probability': 0.9998315572738647, 'entity': 'I-GENE'},
+                             {'raw_token': 'complex', 'probability': 0.999302864074707, 'entity': 'O'},
+                             {'raw_token': 'has', 'probability': 0.9999722242355347, 'entity': 'O'},
+                             {'raw_token': 'at', 'probability': 0.999977707862854, 'entity': 'O'},
+                             {'raw_token': 'least', 'probability': 0.9999630451202393, 'entity': 'O'},
+                             {'raw_token': 'two', 'probability': 0.9999375343322754, 'entity': 'O'},
+                             {'raw_token': 'se', 'probability': 0.9999256134033203, 'entity': 'O'},
+                             {'raw_token': '##par', 'probability': 0.999923586845398, 'entity': 'O'},
+                             {'raw_token': '##able', 'probability': 0.9999620914459229, 'entity': 'O'},
+                             {'raw_token': 'nuclear', 'probability': 0.9999343156814575, 'entity': 'O'},
+                             {'raw_token': 'functions', 'probability': 0.9999608993530273, 'entity': 'O'},
+                             {'raw_token': ':', 'probability': 0.9999692440032959, 'entity': 'O'},
+                             {'raw_token': 'it', 'probability': 0.9999351501464844, 'entity': 'O'},
+                             {'raw_token': 'forms', 'probability': 0.9999544620513916, 'entity': 'O'},
+                             {'raw_token': 'a', 'probability': 0.9999556541442871, 'entity': 'O'},
+                             {'raw_token': 'rapid', 'probability': 0.9998899698257446, 'entity': 'O'},
+                             {'raw_token': ',', 'probability': 0.9999654293060303, 'entity': 'O'},
+                             {'raw_token': 'yet', 'probability': 0.9999579191207886, 'entity': 'O'},
+                             {'raw_token': 'trans', 'probability': 0.9999544620513916, 'entity': 'O'},
+                             {'raw_token': '##ient', 'probability': 0.9999707937240601, 'entity': 'O'},
+                             {'raw_token': 'sequence', 'probability': 0.9998983144760132, 'entity': 'O'},
+                             {'raw_token': '-', 'probability': 0.999916672706604, 'entity': 'O'},
+                             {'raw_token': 'specific', 'probability': 0.9999512434005737, 'entity': 'O'},
+                             {'raw_token': 'DNA', 'probability': 0.9999529123306274, 'entity': 'O'},
+                             {'raw_token': 'binding', 'probability': 0.9999488592147827, 'entity': 'O'},
+                             {'raw_token': 'complex', 'probability': 0.999947190284729, 'entity': 'O'},
+                             {'raw_token': ',', 'probability': 0.9999788999557495, 'entity': 'O'},
+                             {'raw_token': 'and', 'probability': 0.9999576807022095, 'entity': 'O'},
+                             {'raw_token': 'it', 'probability': 0.9999254941940308, 'entity': 'O'},
+                             {'raw_token': 'potent', 'probability': 0.9999325275421143, 'entity': 'O'},
+                             {'raw_token': '##iate', 'probability': 0.9999257326126099, 'entity': 'O'},
+                             {'raw_token': '##s', 'probability': 0.9999498128890991, 'entity': 'O'},
+                             {'raw_token': 'AP', 'probability': 0.9984390139579773, 'entity': 'B-GENE'},
+                             {'raw_token': '##1', 'probability': 0.9993322491645813, 'entity': 'I-GENE'},
+                             {'raw_token': '-', 'probability': 0.9995315074920654, 'entity': 'O'},
+                             {'raw_token': 'dependent', 'probability': 0.9997039437294006, 'entity': 'O'},
+                             {'raw_token': 'transcription', 'probability': 0.9997454285621643, 'entity': 'O'},
+                             {'raw_token': '##al', 'probability': 0.9996950626373291, 'entity': 'O'},
+                             {'raw_token': 'activation', 'probability': 0.9998255372047424, 'entity': 'O'},
+                             {'raw_token': '.', 'probability': 0.9999220371246338, 'entity': 'O'}
+                             ]
+
         # Act
         actual = sut.locate_position(input_raw, entities_detected, "O", "B-GENE", {"B-GENE": "I-GENE"}, docid)
 
