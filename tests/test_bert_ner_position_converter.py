@@ -49,6 +49,27 @@ class TestBertNerPositionConverter(TestCase):
         # Assert
         self.assertSequenceEqual(expected, actual)
 
+    def test_locate_position_entity_begins_with_token(self):
+        # Arrange
+        sut = BertNerPositionConverter()
+        input_raw = "growth arrest inG"
+        docid = 1
+
+        expected = [
+            (1, 14, 14, 'G')
+        ]
+
+        entities_detected = [{'raw_token': '[CLS]', 'probability': 0.9999691247940063, 'entity': 'O'},
+                             {'raw_token': 'growth', 'probability': 0.9998800754547119, 'entity': 'O'},
+                             {'raw_token': 'arrest', 'probability': 0.9998175501823425, 'entity': 'O'},
+                             {'raw_token': 'in', 'probability': 0.9993170499801636, 'entity': 'O'},
+                             {'raw_token': '##G', 'probability': 0.8757198452949524, 'entity': 'B-GENE'}]
+        # Act
+        actual = sut.locate_position(input_raw, entities_detected, "O", "B-GENE", {"B-GENE": "I-GENE"}, docid)
+
+        # Assert
+        self.assertSequenceEqual(expected, actual)
+
     def test_locate_position_repeated_entity(self):
         # Arrange
         sut = BertNerPositionConverter()
