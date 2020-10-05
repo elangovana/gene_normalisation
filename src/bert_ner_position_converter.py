@@ -20,29 +20,38 @@ class BertNerPositionConverter:
         offset = 0
         result = []
         original_text_npsp = original_text.replace(" ", "")
-        for si, s in enumerate(entities_detected):
+        ner_i = 0
+        while ner_i < len(entities_detected):
+            ner_detection = entities_detected[ner_i]
+            raw_token = ner_detection["raw_token"]
+            entity_type = ner_detection["entity"]
+            ner_i += 1
 
-            if s["entity"] == other_label:
-                if s["raw_token"] not in ('[CLS]'): offset += len(s["raw_token"].lstrip("#"))
-                continue
-            elif s["entity"] not in entity_labels:
+            if raw_token in ('[CLS]'): continue
+
+            if entity_type not in entity_labels:
+                offset = offset + len(raw_token.lstrip("#"))
                 continue
 
-            entity = s["raw_token"]
-            for j in range(si + 1, len(entities_detected)):
-                if entities_detected[j]["entity"] != continuation_symbol_dict[s["entity"]]: break
-                raw_token = entities_detected[j]["raw_token"]
+            entity_text = raw_token
+            # continue to search for the next parts of the entity
+            while ner_i < len(entities_detected):
+                continue_ner_detection = entities_detected[ner_i]
+                ner_i += 1
+
+                if continue_ner_detection["entity"] != continuation_symbol_dict[entity_type]: break
+                raw_token = continue_ner_detection["raw_token"]
                 sep = " "
                 if raw_token.startswith("#") or raw_token == ".":
                     sep = ""
 
-                entity = entity + sep + entities_detected[j]["raw_token"].lstrip("#")
+                entity_text = entity_text + sep + raw_token.lstrip("#")
 
-            entity_npsp = entity.replace(" ", "")
-            assert entity_npsp in original_text_npsp, "`{}` not in {}".format(entity, original_text_npsp)
-            margin = 2
+            entity_npsp = entity_text.replace(" ", "")
+            assert entity_npsp in original_text_npsp, "`{}` not in {}".format(entity_text, original_text_npsp)
+            margin = 1
             approx_offset = offset - margin if offset > margin else 0
-            approx_end = approx_offset + len(entity) + margin * 2
+            approx_end = approx_offset + len(entity_npsp) + margin * 2
             count_occ = original_text_npsp.count(entity_npsp, approx_offset, approx_end)
             assert count_occ == 1, "{} - found `{}` n times {} in {} after offset {} {}".format(doc_id, entity_npsp,
                                                                                                 count_occ,
@@ -52,8 +61,11 @@ class BertNerPositionConverter:
 
             start_pos = original_text_npsp.find(entity_npsp, approx_offset, approx_end)
             end_pos = start_pos + len(entity_npsp) - 1
-            result.append((doc_id, start_pos, end_pos, entity))
+            result.append((doc_id, start_pos, end_pos, entity_text))
+
+            ner_i = ner_i - 1
             offset = start_pos + len(entity_npsp)
+
         return result
 
     def process_file(self, input_file_or_handle, output_file_or_handler, other_label, entity_labels,
