@@ -8,7 +8,7 @@ from datasets.biocreative_ner_label_mapper import BiocreativeNerLabelMapper
 
 class BertNerPositionConverter:
     """
-    Converts the NER results from BioBERT to the Position in the original text defined as:
+    Converts the NER results from BERT to the Position in the original text defined as:
 
     The start-offset is the number of non-whitespace characters in the sentence preceding the first character of the mention,
     and the end-offset is the number of non-whitespace characters in the sentence preceding the last character of the mention.
