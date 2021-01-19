@@ -95,6 +95,7 @@ class Train:
 
             self._logger.debug("Running epoch {}".format(self.epochs))
 
+            model_network.zero_grad()
             for idx, batch in enumerate(train_iter):
                 self._logger.debug("Running batch {}".format(idx))
                 batch_x = batch[0].to(device=self._default_device)
@@ -104,16 +105,15 @@ class Train:
 
                 iterations += 1
 
-                # Step 2. train
+                # Step 1. train
                 model_network.train()
-                model_network.zero_grad()
 
-                # Step 3. Run the forward pass
+                # Step 2. Run the forward pass
                 # words
                 self._logger.debug("Running forward")
                 predicted = model_network(batch_x)[0]
 
-                # Step 4. Compute loss
+                # Step 3. Compute loss
                 self._logger.debug("Running loss")
                 # Reshape : torch.Size([batch, sequence, class]) to torch.Size([batch, class, sequence])
                 loss = loss_function(predicted.permute(0, 2, 1), batch_y) / self.accumulation_steps
@@ -123,7 +123,7 @@ class Train:
                 actual_train.extend(batch_y.cpu().tolist())
                 predicted_train.extend(torch.max(predicted, dim=2)[1].view(len(predicted), -1).cpu().tolist())
 
-                # Step 5. Only update weights after gradients are accumulated for n steps
+                # Step 4. Only update weights after gradients are accumulated for n steps
                 if (idx + 1) % self.accumulation_steps == 0:
                     self._logger.debug("Running optimiser")
                     optimizer.step()
