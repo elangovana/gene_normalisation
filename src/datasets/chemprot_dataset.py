@@ -46,11 +46,11 @@ class ChemprotDataset(Dataset):
     def _parse(self, raw_lines):
         result = []
         for r in raw_lines:
-            id, text = r.split("\t")[0], r.split("\t")[1]
+            id, title, text = r.split("\t")[0],r.split("\t")[1], r.split("\t")[2]
 
             result.append({
                 "id": id,
-                "text": text.rstrip("\n")
+                "text":  title+ " "+text.rstrip("\n")
             })
         return result
 
