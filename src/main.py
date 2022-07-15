@@ -9,6 +9,11 @@ from builder import Builder
 
 def main():
     parser = argparse.ArgumentParser()
+    dataset_factories = {
+
+        "datasets.biocreative_dataset_factory.BiocreativeDatasetFactory",
+        "datasets.chemprot_dataset_factory.ChemprotDatasetFactory"
+    }
     parser.add_argument("--trainfile",
                         help="The input train file wrt to train  dir", required=True)
     parser.add_argument("--traindir",
@@ -18,6 +23,11 @@ def main():
                         help="The classes txt file which is a list of annotations ", required=True)
     parser.add_argument("--classdir",
                         help="The class file  dir", default=os.environ.get("SM_CHANNEL_CLASS", "."))
+
+    parser.add_argument("--datasetfactory",
+                        help="The dataset factory name",
+                        default="datasets.biocreative_dataset_factory.BiocreativeDatasetFactory",
+                        choices=dataset_factories)
 
     parser.add_argument("--outdir", help="The output dir", default=os.environ.get("SM_OUTPUT_DATA_DIR", "."))
     parser.add_argument("--modeldir", help="The model dir", default=os.environ.get("SM_MODEL_DIR", "."))
@@ -50,7 +60,8 @@ def main():
     train_data_file = os.path.join(args.traindir, args.trainfile)
     classes_file = os.path.join(args.classdir, args.classfile)
 
-    b = Builder(train_data=train_data_file, annotation_file=classes_file,
+    b = Builder(train_data=train_data_file, train_annotation_file=classes_file,
+                dataset_factory_name=args.datasetfactory,
                 checkpoint_dir=args.checkpointdir, epochs=args.epochs,
                 early_stopping_patience=args.earlystoppingpatience, batch_size=args.batch, max_seq_len=args.maxseqlen,
                 learning_rate=args.lr, fine_tune=args.finetune, model_dir=args.modeldir)
