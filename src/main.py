@@ -24,6 +24,16 @@ def main():
     parser.add_argument("--classdir",
                         help="The class file  dir", default=os.environ.get("SM_CHANNEL_CLASS", "."))
 
+    parser.add_argument("--valfile",
+                        help="The input val file wrt to val  dir", default=None)
+    parser.add_argument("--valdir",
+                        help="The input val  dir", default=os.environ.get("SM_CHANNEL_VAL", None))
+
+    parser.add_argument("--valclassfile",
+                        help="The classes txt file which is a list of annotations for validation", default=None)
+    parser.add_argument("--valclassdir",
+                        help="The val class file  dir", default=os.environ.get("SM_CHANNEL_VALCLASS", None))
+
     parser.add_argument("--datasetfactory",
                         help="The dataset factory name",
                         default="datasets.biocreative_dataset_factory.BiocreativeDatasetFactory",
@@ -60,7 +70,11 @@ def main():
     train_data_file = os.path.join(args.traindir, args.trainfile)
     classes_file = os.path.join(args.classdir, args.classfile)
 
-    b = Builder(train_data=train_data_file, train_annotation_file=classes_file,
+    val_data_file = os.path.join(args.valdir, args.valfile)
+    val_classes_file = os.path.join(args.valclassdir, args.valclassfile)
+
+    b = Builder(train_data=train_data_file, train_annotation_file=classes_file, val_data=val_data_file,
+                val_annotation_file=val_classes_file,
                 dataset_factory_name=args.datasetfactory,
                 checkpoint_dir=args.checkpointdir, epochs=args.epochs,
                 early_stopping_patience=args.earlystoppingpatience, batch_size=args.batch, max_seq_len=args.maxseqlen,
