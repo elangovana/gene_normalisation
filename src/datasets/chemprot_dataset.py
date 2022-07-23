@@ -1,6 +1,5 @@
 from torch.utils.data import Dataset
 
-from datasets.biocreative_ner_label_mapper import BiocreativeNerLabelMapper
 from datasets.chemprot_ner_label_mapper import ChemprotNerLabelMapper
 
 
