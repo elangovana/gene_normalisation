@@ -2,20 +2,16 @@ import logging
 import os
 
 from sklearn.model_selection import train_test_split
-from torch import nn
 from torch.optim import Adam
 from torch.utils.data import DataLoader
 from transformers import BertTokenizer
 
 from collate import collate
-from datasets.biocreative_dataset import BiocreativeDataset
-from datasets.biocreative_ner_label_mapper import BiocreativeNerLabelMapper
 from locator import Locator
+from loss.ner_cross_entropy_loss import NerCrossEntropyLoss
 from model.bert_model import BertModel
 from preprocessor import Preprocessor
 from trainer import Train
-from loss.top_k_cross_entropy_loss import TopKCrossEntropyLoss
-from loss.ner_cross_entropy_loss import NerCrossEntropyLoss
 
 
 class Builder:
@@ -72,7 +68,8 @@ class Builder:
     def get_preprocessor(self):
         tokeniser = self._tokenisor
         if tokeniser is None:
-            tokeniser = BertTokenizer.from_pretrained(self._bert_model_name, do_lower_case=self._token_lower_case)
+            tokeniser = BertTokenizer.from_pretrained(self._bert_model_name, do_lower_case=self._token_lower_case,
+                                                      do_basic_tokenize=False)
 
         preprocessor = Preprocessor(max_feature_len=self._max_seq_len, tokeniser=tokeniser,
                                     label_mapper=self.get_label_mapper())
@@ -93,13 +90,12 @@ class Builder:
 
         return self._train_dataset
 
-
     def get_val_dataset(self):
-        if self.val_data is None: return  None
+        if self.val_data is None: return None
 
         if self._val_dataset is None:
             self._val_dataset = self._dataset_factory.get_dataset(self.val_data, self.val_annotation_file,
-                                                                    preprocessors=self.get_preprocessor())
+                                                                  preprocessors=self.get_preprocessor())
 
         return self._val_dataset
 
