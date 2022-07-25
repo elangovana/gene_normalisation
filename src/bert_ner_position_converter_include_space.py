@@ -91,6 +91,10 @@ class BertNerPositionIncludeSpaceConverter:
         return data
 
     def _write_file(self, items, input_file_or_handle):
+        if len(items) == 0:
+            self._logger.info("No entities detected..Hence not writing output file")
+            return
+
         s = ""
         for i_i, i in enumerate(items):
             s += "{}\tT{}\t{}\t{}\t{}\t{}\n".format(i[0], i_i, i[1], i[2], i[3], i[4])
