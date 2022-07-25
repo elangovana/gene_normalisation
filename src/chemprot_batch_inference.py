@@ -1,4 +1,5 @@
 import argparse
+import csv
 import json
 import logging
 import os.path
@@ -17,7 +18,7 @@ class ChemprotBatchInference:
     def _logger(self):
         return logging.getLogger(__name__)
 
-    def process_file(self, inputfile, model, outputfile, batch_size=8):
+    def process_file(self, inputfile, model, outputfile_prefix, batch_size=8):
         self._logger.info("Processing file {}".format(inputfile))
 
         with open(inputfile, "r") as f:
@@ -27,7 +28,9 @@ class ChemprotBatchInference:
                 result.extend(self._process_batch(doc_batch, model))
         self._logger.info("Completed inference file {}".format(inputfile))
 
-        self._write_entities(result, outputfile)
+        self._write_entities(result, f"{outputfile_prefix}.anon.txt")
+        self._write_abstract(result, f"{outputfile_prefix}.abstract.tsv")
+
         self._logger.info("Completed processing file {}".format(inputfile))
 
     def _process_batch(self, doc_batch, model):
@@ -45,7 +48,7 @@ class ChemprotBatchInference:
         self._extract_tar(modeltar, outputmodeldir)
         model = model_fn(outputmodeldir)
         for f in os.listdir(inputdir):
-            self.process_file(os.path.join(inputdir, f), model, os.path.join(outputdir, f"{f}.anon.txt"),
+            self.process_file(os.path.join(inputdir, f), model, os.path.join(outputdir, f),
                               batch_size=batch_size)
 
     def _write_entities(self, json_result, outputfile):
@@ -54,6 +57,12 @@ class ChemprotBatchInference:
         c.process_file(StringIO(json.dumps(json_result)), outputfile, label_mapper.other_label,
                        label_mapper.entity_labels,
                        label_mapper.continuation_symbol)
+
+    def _write_abstract(self, json_result, outputfile):
+        with open(outputfile, "w") as f:
+            csv_writer = csv.writer(f, delimiter='\t', quotechar=None)
+            for d in json_result:
+                csv_writer.writerow([d["docid"], d["text"]])
 
     def _chunk(self, l, size=5):
         for i in range(0, len(l), size):
