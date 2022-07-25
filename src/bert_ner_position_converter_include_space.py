@@ -44,6 +44,8 @@ class BertNerPositionIncludeSpaceConverter:
                 elif prev_entity_type and continuation_symbol_dict[prev_entity_type] != entity_type:
                     # Handle, case continuation symbol but the entity continuation doesnt match..
                     prev_entity_type = None
+            elif prev_entity_type and continuation_symbol_dict[prev_entity_type] == entity_type:
+                potential_entity_text = potential_entity_text + " " + clean_token
             elif entity_type in entity_labels:
                 potential_entity_text = clean_token
                 entity_offset = token_offset
