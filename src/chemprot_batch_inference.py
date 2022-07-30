@@ -62,7 +62,7 @@ class ChemprotBatchInference:
         with open(outputfile, "w") as f:
             csv_writer = csv.writer(f, delimiter='\t', quotechar=None)
             for d in json_result:
-                csv_writer.writerow([d["docid"], d["text"]])
+                csv_writer.writerow([d["docid"], d["text"].replace("\t", " ").replace("\n", " ").replace("\r", " ")])
 
     def _chunk(self, l, size=5):
         for i in range(0, len(l), size):
